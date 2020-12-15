@@ -27,15 +27,39 @@ class GetXmindExcel():
     """
     xmind转json
     """
-    def __init__(self):
-        pass
+    def __init__(self,xmind_name, excel_name):
+
+        self.xmind_name = xmind_name + ".xmind"
+        self.excel_name = xmind_name + excel_name
+
+        self.path = '/wuting'
+
+        #计算测试用例的条数
+        self.row_num = 1
+
+    def xmind_title(self, value):
+        """获取xmind标题内容"""
+        return value['title']
+
+    def numberLen(self, value):
+        try:
+            return len(value['topics'])
+        except KeyError:
+            return 0
+
 
     def get_xmind_json(self):
         """
         将xmind转json格式
         :return:
         """
-        pass
+
+        #获取到xmind的所有数据
+        self.XmindContent = xmind_to_dict(self.xmind_name)[0]['topic']
+        self.XmindTitle = self.xmind_title(self.XmindContent)
+        FeaturesNUM = self.numberLen(self.XmindContent)
+        TestName = ''  # 模块+标题名称
+        # for i in range(FeaturesNUM):
 
     def save_json_to_excel(self, xmind_json):
         """
@@ -43,3 +67,13 @@ class GetXmindExcel():
         :return:
         """
         pass
+
+if __name__ == '__main__':
+    UserName = "不使用"#input('UserName:')
+    XmindFile = input('XmindFile:') #xmind_excel.xmind
+
+    if XmindFile == 'wt':
+        XmindFile = 'xmind_excel'
+
+    ExcelFile = input('ExcelFile:') #采销首页
+    GetXmindExcel(XmindFile, ExcelFile).get_xmind_json()
