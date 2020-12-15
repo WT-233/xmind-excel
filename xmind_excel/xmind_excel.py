@@ -24,16 +24,24 @@ import datetime
 import timeit
 
 class xmind_to_csv():
-    def __init__(self,excelName,UserName):
-        self.excelName=excelName
+    def __init__(self,excelName,xmindName,UserName='admin'):
+        self.excelName= xmindName +  "__" + excelName
         self.username=UserName
         self.filename = self.excelName + '.xlsx'
         self.workbook = openpyxl.Workbook()
         self.workbook.save(self.filename)
         self.workbook = openpyxl.load_workbook(self.filename) #打开表
         self.moudle=''
+        self.path = "/Users/wuting/Documents/测试工作/测试用例"
+
+        self.excelName=excelName;
+        self.xmindName=xmindName + ".xmind";
 
     def createSheet(self):
+        """
+        获取执行时间
+        :return:
+        """
         self.worksheet = self.workbook.create_sheet(self.moudle, 0)
         tinme_num =timeit.timeit("sum(range(100))")
         print (tinme_num)
@@ -91,9 +99,10 @@ class xmind_to_csv():
 
 
 
-    def readXmind(self, FileName):
+    def readXmind(self):
+
+        FileName = self.xmindName
         self.rowNum = 1  # 计算测试用例的条数
-        # self.caseDict = {}
         self.XmindContent = xmind_to_dict(FileName)[0]['topic']
         self.XmindTitle = self.xmind_title(self.XmindContent)
         FeaturesNUM = self.numberLen(self.XmindContent)
@@ -203,8 +212,9 @@ class xmind_to_csv():
 if __name__ == '__main__':
     UserName = "不使用"#input('UserName:')
     XmindFile = input('XmindFile:') #xmind_excel.xmind
+
     if XmindFile == 'wt':
         XmindFile = '广告导出计划.xmind'
 
     ExcelFile = input('ExcelFile:') #采销首页
-    xmind_to_csv(ExcelFile,UserName).readXmind(XmindFile)
+    xmind_to_csv(ExcelFile,XmindFile,UserName).readXmind()
