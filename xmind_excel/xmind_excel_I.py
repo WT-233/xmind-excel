@@ -28,8 +28,11 @@ class xmind_to_csv():
         self.excelName= xmindName +  "__" + excelName
         self.username=UserName
         self.filename = self.excelName + '.xlsx'
+
+
         self.workbook = openpyxl.Workbook()
         self.workbook.save(self.filename)
+
         self.workbook = openpyxl.load_workbook(self.filename) #打开表
         self.moudle=''
         self.path = "/Users/wuting/Documents/测试工作/测试用例"
@@ -43,11 +46,9 @@ class xmind_to_csv():
         :return:
         """
         self.worksheet = self.workbook.create_sheet(self.moudle, 0)
-        tinme_num =timeit.timeit("sum(range(100))")
-        print (tinme_num)
+        # tinme_num =timeit.timeit("sum(range(100))")
+        # print (tinme_num)
         return 0
-
-
 
     def my_log(self):
         '''创建对象的类方法'''
@@ -71,9 +72,6 @@ class xmind_to_csv():
         sh.setFormatter(formatter)
         fh.setFormatter(formatter)
         return mylog
-
-
-
 
     def numberLen(self, value):
         try:

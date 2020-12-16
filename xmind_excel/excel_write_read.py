@@ -2,24 +2,30 @@
 """
 Excel 文件流处理
 """
-from  openpyxl import  Workbook
+
+import openpyxl
 class ExcelWriteRead(object):
-    def __init__(self, path, file_name, sheet_name):
-        # self.path = path
+    def __init__(self, file_path, file_name):
+        self.path = file_path + file_name +'.xlsx'
         self.file_name = file_name
-        self.sheet_name = sheet_name
 
-        self.wb = Workbook()
-        self.ws = self.wb.active
+        self.sheel_name = ''
 
-    def excel_write(self):
-        # self.ws.title = "ame"
-        ws1 = self.wb.create_sheet("rwerwe")
-        ws2 = self.wb.create_sheet("02")
+        #初始化
+        self.workbook = openpyxl.Workbook()
+        self.worksheet = ""
+        self.workbook.save(self.path)
 
-        self.wb.save(self.file_name)
+    def excel_write(self, row, xmind_dic, sheel_name):
+        # self.workbook = openpyxl.Workbook()
 
-if __name__ == '__main__':
-    n = ExcelWriteRead('/Users/wuting/wt测试.xls', "/Users/wuting/wt测试002.xlsx","wt")
+        if self.sheel_name != sheel_name:
+            self.sheel_name = sheel_name
+            self.worksheet = self.workbook.create_sheet(self.sheel_name, 0)
 
-    n.excel_write()
+        sort = 1
+        for key, value in xmind_dic.items():
+            self.worksheet.cell(row=1, column=sort).value = key
+            self.worksheet.cell(row=row, column=sort).value = value
+            sort = sort + 1
+            self.workbook.save(self.path)
