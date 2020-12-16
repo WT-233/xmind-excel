@@ -185,5 +185,5 @@ if __name__ == '__main__':
     if XmindFile == 'wt':
         XmindFile = 'xmind_excel'
 
-    ExcelFile = "0"#input('ExcelFile:') #采销首页
+    ExcelFile = input('ExcelFile:') #采销首页
     GetXmindExcel(XmindFile, ExcelFile).get_xmind_json()
