@@ -11,7 +11,7 @@ class ExcelWriteRead(object):
 
         self.sheel_name = ''
 
-        #初始化
+        # 初始化
         self.workbook = openpyxl.Workbook()
         self.worksheet = ""
         self.workbook.save(self.path)

@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+from xmindparser import xmind_to_dict
+from xmind_excel.excel_write_read import ExcelWriteRead
+from xmind_excel.get_dic_value import GetDicValue
 """
 一期的架构是从百度上扒来别人分享的基础上进行了修改，
 在使用一段时间后，发现不太稳定，有存在一些bug且for循环太多，因此进行重构
@@ -11,12 +14,14 @@ xmind的原来编写格式不变，增加优化
 4、支持输出用例等级；___已支持
 5、支持输出用例类型；___已支持
 6、支持输出前置步骤；___已支持
+"""
 
 """
-from xmindparser import xmind_to_dict
-from xmind_excel.excel_write_read import ExcelWriteRead
+20201223：
+1、前置步骤可以在最后一个步骤识别
+2、修正了用例等级 & 用例类型的标识地方（放在标题3中识别）
+"""
 
-from xmind_excel.get_dic_value import GetDicValue
 
 class GetXmindExcel(object):
     """
@@ -65,13 +70,13 @@ class GetXmindExcel(object):
         :return:
         """
 
-        #获取到xmind的基本信息
+        # 获取到xmind的基本信息
         xmind_file_dic = xmind_to_dict(self.xmind_path)[0]['topic']
 
         xmind_title = self.GET_DIC_VALUE.get_value_key_is_title(xmind_file_dic)
         xmind_topics = self.GET_DIC_VALUE.get_value_key_is_topics(xmind_file_dic)
 
-        #用列表的形式存放模块信息
+        # 用列表的形式存放模块信息
         moudle_names_list = []
         moudle_topics_list = []
         for i in xmind_topics:
@@ -90,32 +95,40 @@ class GetXmindExcel(object):
                 """
                 获取用例等级、标题1
                 """
-                title_level = ''
-                title_tag = ''
-                if  "makers" in moudle_topics[t1].keys():
-                    title_level = moudle_topics[t1]["makers"][0]
-                    title_level = self.get_level_word(title_level)
 
-                if "labels" in moudle_topics[t1].keys():
-                    title_tag = moudle_topics[t1]["labels"][0]
+
                 title_names = ["", "", ""]
 
                 title_names[0] = self.GET_DIC_VALUE.get_value_key_is_title(moudle_topics[t1])
-                title_topics = self.GET_DIC_VALUE.get_value_key_is_topics(moudle_topics[t1])
+                title_topics1 = self.GET_DIC_VALUE.get_value_key_is_topics(moudle_topics[t1])
 
-                for t2 in title_topics:
+                for t2 in title_topics1:
                     """
                     获取标题2
                     """
                     title_names[1] = self.GET_DIC_VALUE.get_value_key_is_title(t2)
-                    title_topics = self.GET_DIC_VALUE.get_value_key_is_topics(t2)
+                    title_topics2 = self.GET_DIC_VALUE.get_value_key_is_topics(t2)
 
-                    for t3 in title_topics:
+                    for t3 in range(0, len(title_topics2)):
                         """
+                        用例等级、用例类型
                         获取标题3
                         """
-                        title_names[2] = self.GET_DIC_VALUE.get_value_key_is_title(t3)
-                        title_topics = self.GET_DIC_VALUE.get_value_key_is_topics(t3)
+                        title_level = ''
+                        title_tag = ''
+                        # 用例等级
+                        if "makers" in title_topics2[t3].keys():
+                            for t3_1 in title_topics2[t3]["makers"]:
+                                if len(t3_1) > 7:
+                                    if t3_1[:8] == 'priority':
+                                        title_level = t3_1
+                                        title_level = self.get_level_word(title_level)
+                        # 用例类型
+                        if "labels" in title_topics2[t3].keys():
+                            title_tag = title_topics2[t3]["labels"][0]
+
+                        title_names[2] = self.GET_DIC_VALUE.get_value_key_is_title(title_topics2[t3])
+                        title_topics3 = self.GET_DIC_VALUE.get_value_key_is_topics(title_topics2[t3])
 
                         # title_name = title_names[0] + " - " + title_names[1] + " - " + title_names[2]
                         title_name = ''
@@ -128,22 +141,30 @@ class GetXmindExcel(object):
                         title_preset = ""
                         title_step = ""
                         title_pre_step = ""
-                        if title_topics is not None:
-                            for s in range(0, len(title_topics)):
+                        if title_topics3 is not None:
+                            step_num = 1
+                            for s in range(0, len(title_topics3)):
                                 """
                                 获取前置步骤、执行步骤
                                 """
-                                if s == 0 and "makers" in title_topics[0].keys():
-                                    if self.GET_DIC_VALUE.get_value_key_is_makers(title_topics[0])[0] == 'flag-red':
-                                        title_pre_step = self.GET_DIC_VALUE.get_value_key_is_title(title_topics[0])
+                                # 前置步骤在最前
+                                if s == 0 and "makers" in title_topics3[s].keys():
+                                    if 'flag-red' in self.GET_DIC_VALUE.get_value_key_is_makers(title_topics3[s]):
+                                        title_pre_step = self.GET_DIC_VALUE.get_value_key_is_title(title_topics3[s])
+                                        continue
+                                # 前置步骤在最末
+                                if s == len(title_topics3)-1 and "makers" in title_topics3[s].keys():
+                                    if 'flag-red' in self.GET_DIC_VALUE.get_value_key_is_makers(title_topics3[s]):
+                                        title_pre_step = self.GET_DIC_VALUE.get_value_key_is_title(title_topics3[s])
                                         continue
                                 step = ""
-                                if len(title_topics) > 1:
-                                    step = "步骤" + str(s+1) + ": "
-                                    title_step += step + self.GET_DIC_VALUE.get_value_key_is_title(title_topics[s]) + "\n"
+                                if len(title_topics3) > 1:
+                                    step = "步骤" + str(step_num) + ": "
+                                    step_num += 1
+                                    title_step += step + self.GET_DIC_VALUE.get_value_key_is_title(title_topics3[s]) + "\n"
                                 else:
-                                    title_step += self.GET_DIC_VALUE.get_value_key_is_title(title_topics[s]) + "\n"
-                                title_presets = self.GET_DIC_VALUE.get_value_key_is_topics(title_topics[s])
+                                    title_step += self.GET_DIC_VALUE.get_value_key_is_title(title_topics3[s]) + "\n"
+                                title_presets = self.GET_DIC_VALUE.get_value_key_is_topics(title_topics3[s])
 
                                 if title_presets is not None:
                                     """
@@ -157,7 +178,6 @@ class GetXmindExcel(object):
                                                 title_preset += "\n"
                                         else:
                                             title_preset += self.GET_DIC_VALUE.get_value_key_is_title(title_presets[p]) + "\n"
-
                         xmind_dic = {}
                         xmind_dic["用例目录"] = ""
                         xmind_dic["用例名称"] = title_name
@@ -178,12 +198,16 @@ class GetXmindExcel(object):
                         self.rowNum = self.rowNum + 1
                         self.EXCEL_WRITE_READ.excel_write(self.rowNum, xmind_dic, moudle_name)
 
+
 if __name__ == '__main__':
-    UserName = "不使用"#input('UserName:')
-    XmindFile = input('XmindFile:') #xmind_excel.xmind
 
+    UserName = "不使用"
+    # UserName = input('UserName:')
+
+    XmindFile = input('XmindFile:')
     if XmindFile == 'wt':
-        XmindFile = 'xmind_excel'
+        XmindFile = 'es索引优化-导出'
 
-    ExcelFile = input('ExcelFile:') #采销首页
+    ExcelFile = input('ExcelFile:')
+
     GetXmindExcel(XmindFile, ExcelFile).get_xmind_json()
