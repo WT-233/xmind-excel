@@ -19,21 +19,29 @@ xmind的原来编写格式不变，增加优化
 """
 20201223：
 1、前置步骤可以在最后一个步骤识别
-2、修正了用例等级 & 用例类型的标识地方（放在标题3中识别）
+2、修正了用例等级 & 用例类型点的标识位置（标题1-3 都可以识别，标题3优先级大于标题1和2）
+
+20201225
+1、模块识别为需求id列
+2、
 """
+
 
 
 class GetXmindExcel(object):
     """
     xmind转json
     """
-    def __init__(self,xmind_name, excel_name):
+    def __init__(self,xmind_name, excel_name, is_need_num):
 
         self.xmind_name = xmind_name + ".xmind"
         self.excel_name = xmind_name + str(excel_name)
 
         self.path = '/Users/wuting/Documents/测试工作/测试用例/xmind_excel/'
         self.xmind_path = self.path + self.xmind_name
+
+        # 模块名称是否为需求id
+        self.is_need_num = is_need_num
 
         self.GET_DIC_VALUE = GetDicValue()
 
@@ -48,6 +56,20 @@ class GetXmindExcel(object):
             "priority-3": "P2：界面UI方面的测试用例",
             "priority-4": "P3：确保系统兼容性方面的测试用例（如与手机本身功能的兼容等）",
             "priority-5": "P4：用户体验方面的测试用例"
+        }
+        # 暂不投入使用
+        self.TAG_DIC = {
+            "0": "功能测试",
+            "1": "接口用例",
+            "2": "性能用例",
+            "3": "安全性用例",
+            "4": "兼容性用例",
+            "5": "交互（UI/UE）用例",
+            "6": "配置用例",
+            "7": "组件用例",
+            "8": "文档用例",
+            "9": "适配用例",
+            "10": "冒烟用例",
         }
 
         self.row_num = 1
@@ -95,6 +117,18 @@ class GetXmindExcel(object):
                 """
                 获取用例等级、标题1
                 """
+                title_level = ''
+                title_tag = ''
+                # 用例等级
+                if "makers" in moudle_topics[t1].keys():
+                    for t1_i in moudle_topics[t1]["makers"]:
+                        if len(t1_i) > 7:
+                            if t1_i[:8] == 'priority':
+                                title_level = t1_i
+                                title_level = self.get_level_word(title_level)
+                # 用例类型
+                if "labels" in moudle_topics[t1].keys():
+                    title_tag = moudle_topics[t1]["labels"][0]
 
 
                 title_names = ["", "", ""]
@@ -106,6 +140,17 @@ class GetXmindExcel(object):
                     """
                     获取标题2
                     """
+                    # 用例等级
+                    if "makers" in title_topics1[t2].keys():
+                        for t2_1 in title_topics1[t2]["makers"]:
+                            if len(t2_1) > 7:
+                                if t2_1[:8] == 'priority':
+                                    title_level = t2_1
+                                    title_level = self.get_level_word(title_level)
+                    # 用例类型
+                    if "labels" in title_topics1[t2].keys():
+                        title_tag = title_topics1[t2]["labels"][0]
+
                     title_names[1] = self.GET_DIC_VALUE.get_value_key_is_title(t2)
                     title_topics2 = self.GET_DIC_VALUE.get_value_key_is_topics(t2)
 
@@ -114,8 +159,7 @@ class GetXmindExcel(object):
                         用例等级、用例类型
                         获取标题3
                         """
-                        title_level = ''
-                        title_tag = ''
+
                         # 用例等级
                         if "makers" in title_topics2[t3].keys():
                             for t3_1 in title_topics2[t3]["makers"]:
@@ -190,6 +234,14 @@ class GetXmindExcel(object):
                         xmind_dic["用例等级"] = title_level
                         xmind_dic["创建人"] = ""
                         xmind_dic["用例类型自定义"] = ""
+
+                        if self.is_need_num == 1:
+                            # if type(moudle_name) is int:
+                            xmind_dic["需求ID"] = moudle_name
+                            # else:
+                            #     print("需求id非int格式，需求ID生成失败")
+                            #     return "需求id非int格式，需求ID生成失败"
+
                         # xmind_dic["模块"] = moudle_name
 
                         self.xmind_list.append(xmind_dic)
@@ -205,9 +257,13 @@ if __name__ == '__main__':
     # UserName = input('UserName:')
 
     XmindFile = input('XmindFile:')
-    if XmindFile == 'wt':
+    if XmindFile == 'wt' or XmindFile == 'WT':
         XmindFile = 'es索引优化-导出'
 
     ExcelFile = input('ExcelFile:')
 
-    GetXmindExcel(XmindFile, ExcelFile).get_xmind_json()
+    IsNeed = input('模块是否为需求id?  [1：是，需求id格式如：1041169]： ')
+    if IsNeed == 1 or '1':
+        GetXmindExcel(XmindFile, ExcelFile, 1).get_xmind_json()
+    else:
+        GetXmindExcel(XmindFile, ExcelFile, 0).get_xmind_json()
