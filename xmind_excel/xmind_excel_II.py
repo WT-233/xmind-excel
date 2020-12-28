@@ -136,7 +136,7 @@ class GetXmindExcel(object):
                 title_names[0] = self.GET_DIC_VALUE.get_value_key_is_title(moudle_topics[t1])
                 title_topics1 = self.GET_DIC_VALUE.get_value_key_is_topics(moudle_topics[t1])
 
-                for t2 in title_topics1:
+                for t2 in range(0, len(title_topics1)):#title_topics1:
                     """
                     获取标题2
                     """
@@ -151,8 +151,8 @@ class GetXmindExcel(object):
                     if "labels" in title_topics1[t2].keys():
                         title_tag = title_topics1[t2]["labels"][0]
 
-                    title_names[1] = self.GET_DIC_VALUE.get_value_key_is_title(t2)
-                    title_topics2 = self.GET_DIC_VALUE.get_value_key_is_topics(t2)
+                    title_names[1] = self.GET_DIC_VALUE.get_value_key_is_title(title_topics1[t2])
+                    title_topics2 = self.GET_DIC_VALUE.get_value_key_is_topics(title_topics1[t2])
 
                     for t3 in range(0, len(title_topics2)):
                         """
